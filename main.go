@@ -6,9 +6,7 @@ import (
     
     "github.com/gin-contrib/cors"
     "github.com/gin-gonic/gin"
-    
-    "oficina/configs"
-    "oficina/routes"
+
 )
 
 func main() {
