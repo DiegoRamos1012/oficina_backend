@@ -1,16 +1,20 @@
 package models
 
 import (
+	"time"
+
 	"gorm.io/gorm"
 )
 
 // Cliente representa a tabela clientes no banco de dados
 type Cliente struct {
 	ID             uint           `json:"id" gorm:"primaryKey;autoIncrement;not null"`
-	Nome           string         `json:"nome" gorm:"not null" binding:"required"`
-	Email          *string        `json:"email"`
-	Telefone       *string        `json:"telefone"`
-	Endereco       string         `json:"endereco"`
+	Nome           string         `json:"nome" gorm:"not null;size:100;index" binding:"required"`
+	Email          *string        `json:"email" gorm:"size:100"`
+	Telefone       *string        `json:"telefone" gorm:"size:20"`
+	Endereco       string         `json:"endereco" gorm:"size:255"`
+	CreatedAt      time.Time      `json:"criadoEm" gorm:"autoCreateTime"`
+	UpdatedAt      time.Time      `json:"atualizadoEm" gorm:"autoUpdateTime"`
 	DeletedAt      gorm.DeletedAt `json:"-" gorm:"index"`                                 // Suporte a soft delete
 	Veiculos       []Veiculo      `json:"veiculos,omitempty" gorm:"foreignKey:ClienteID"` // Relacionamento um para muitos
 }
