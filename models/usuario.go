@@ -12,7 +12,8 @@ type Usuario struct {
 	Nome        string         `json:"nome" gorm:"not null;size:100" binding:"required"`
 	Email       string         `json:"email" gorm:"not null;unique;size:100" binding:"required,email"`
 	Senha       string         `json:"senha,omitempty" gorm:"not null;size:100" binding:"required"`
-	Cargo       string         `json:"cargo" gorm:"size:20;default:'user'"` // Role/perfil do usuário
+	Cargo       string         `json:"cargo" gorm:"size:20;default:'user'"`
+	Ativo       bool           `json:"ativo" gorm:"default:true"` // Novo campo
 	UltimoLogin *time.Time     `json:"ultimoLogin,omitempty"`
 	CreatedAt   time.Time      `json:"criadoEm" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time      `json:"atualizadoEm" gorm:"autoUpdateTime"`
@@ -41,6 +42,12 @@ func (u *Usuario) BeforeUpdate(tx *gorm.DB) error {
 		tx.Statement.SetColumn("Senha", string(hashedPassword))
 	}
 	return nil
+}
+
+// CompareSenha verifica se a senha fornecida corresponde à senha hash armazenada
+func (u *Usuario) CompareSenha(senha string) bool {
+	err := bcrypt.CompareHashAndPassword([]byte(u.Senha), []byte(senha))
+	return err == nil
 }
 
 func (Usuario) TableName() string {

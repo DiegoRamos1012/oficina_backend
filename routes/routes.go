@@ -16,27 +16,34 @@ func SetupRoutes(r *gin.Engine) {
 	db := getDBConnection()
 
 	// Repositórios
+	usuarioRepo := repositories.NewUsuarioRepository(db)
 	clienteRepo := repositories.NewClienteRepositoryGorm(db)
 	veiculoRepo := repositories.NewVeiculoRepository(db)
 	estoqueRepo := repositories.NewEstoqueRepository(db)
 	funcionarioRepo := repositories.NewFuncionarioRepository(db)
+	ordemServicoRepo := repositories.NewOrdemServicoRepository(db)
 
 	// Serviços
+	usuarioService := services.NewUsuarioService(usuarioRepo)
 	clienteService := services.NewClienteService(clienteRepo)
 	veiculoService := services.NewVeiculoService(veiculoRepo)
 	estoqueService := services.NewEstoqueService(estoqueRepo)
 	funcionarioService := services.NewFuncionarioService(funcionarioRepo)
+	ordemServicoService := services.NewOrdemServicoService(ordemServicoRepo, veiculoRepo, clienteRepo, funcionarioRepo, estoqueRepo)
 
 	// Controllers
+	authController := controllers.NewAuthController()
+	usuarioController := controllers.NewUsuarioController(usuarioService)
 	clienteController := controllers.NewClienteController(clienteService)
 	veiculoController := controllers.NewVeiculoController(veiculoService)
 	estoqueController := controllers.NewEstoqueController(estoqueService)
 	funcionarioController := controllers.NewFuncionarioController(funcionarioService)
-	authController := controllers.NewAuthController()
+	ordemServicoController := controllers.NewOrdemServicoController(ordemServicoService)
 
 	// Rotas públicas
 	public := r.Group("/api")
 	{
+		// Rotas de autenticação
 		public.POST("/login", authController.Login)
 		public.POST("/register", authController.Register)
 	}
@@ -45,6 +52,16 @@ func SetupRoutes(r *gin.Engine) {
 	authorized := r.Group("/api")
 	authorized.Use(middlewares.AuthMiddleware())
 	{
+		// Rotas de usuários
+		usuarios := authorized.Group("/usuarios")
+		{
+			usuarios.GET("/", usuarioController.BuscarTodos)
+			usuarios.GET("/:id", usuarioController.BuscarPorID)
+			usuarios.POST("/", usuarioController.Criar)
+			usuarios.PUT("/:id", usuarioController.Atualizar)
+			usuarios.DELETE("/:id", usuarioController.Deletar)
+		}
+
 		// Rotas de clientes
 		clientes := authorized.Group("/clientes")
 		{
@@ -88,6 +105,31 @@ func SetupRoutes(r *gin.Engine) {
 			funcionarios.DELETE("/:id", funcionarioController.Deletar)
 			funcionarios.GET("/cpf/:cpf", funcionarioController.BuscarPorCPF)
 			funcionarios.GET("/cargo/:cargo", funcionarioController.BuscarPorCargo)
+		}
+
+		// Rotas de ordens de serviço
+		os := authorized.Group("/ordens-servico")
+		{
+			os.GET("/", ordemServicoController.BuscarTodas)
+			os.GET("/:id", ordemServicoController.BuscarPorID)
+			os.GET("/numero/:numero", ordemServicoController.BuscarPorNumero)
+			os.GET("/cliente/:clienteId", ordemServicoController.BuscarPorCliente)
+			os.GET("/veiculo/:veiculoId", ordemServicoController.BuscarPorVeiculo)
+			os.GET("/status/:status", ordemServicoController.BuscarPorStatus)
+			os.POST("/", ordemServicoController.Criar)
+			os.PUT("/:id", ordemServicoController.Atualizar)
+			os.PATCH("/:id/status", ordemServicoController.AtualizarStatus)
+			os.DELETE("/:id", ordemServicoController.Deletar)
+
+			// Rotas para itens da OS
+			os.GET("/:id/itens", ordemServicoController.BuscarItens)
+			os.POST("/:id/itens", ordemServicoController.AdicionarItem)
+			os.PUT("/:id/itens/:itemId", ordemServicoController.AtualizarItem)
+			os.DELETE("/:id/itens/:itemId", ordemServicoController.RemoverItem)
+
+			// Ações específicas
+			os.POST("/:id/concluir", ordemServicoController.ConcluirOS)
+			os.POST("/:id/cancelar", ordemServicoController.CancelarOS)
 		}
 	}
 }
