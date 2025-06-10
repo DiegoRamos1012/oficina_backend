@@ -63,3 +63,52 @@ func (c *ClienteController) Criar(ctx *gin.Context) {
 
 	ctx.JSON(http.StatusCreated, clienteCriado)
 }
+
+func (c *ClienteController) Atualizar(ctx *gin.Context) {
+	var cliente models.Cliente
+
+	if err := ctx.ShouldBindJSON(&cliente); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
+		return
+	}
+
+	clienteAtualizado, err := c.clienteService.Atualizar(cliente)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar cliente"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, clienteAtualizado)
+}
+
+func (c *ClienteController) Deletar(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	err = c.clienteService.Deletar(id)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao deletar cliente"})
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
+}
+
+func (c *ClienteController) BuscarComVeiculos(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	cliente, err := c.clienteService.BuscarComVeiculos(id)
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Cliente não encontrado"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, cliente)
+}

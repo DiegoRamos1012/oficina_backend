@@ -1,73 +1,86 @@
 package services
 
 import (
-    "errors"
-    
-    "OficinaMecanica/models"
-    "OficinaMecanica/repositories"
+	"errors"
 
+	"OficinaMecanica/models"
+	"OficinaMecanica/repositories"
 )
 
 type ClienteService interface {
-    BuscarTodos() ([]models.Cliente, error)
-    BuscarPorID(id int) (models.Cliente, error)
-    Criar(cliente models.Cliente) (models.Cliente, error)
-    Atualizar(cliente models.Cliente) (models.Cliente, error)
-    Deletar(id int) error
-    BuscarClienteComVeiculos(id int) (models.ClienteVeiculosDTO, error)
+	BuscarTodos() ([]models.Cliente, error)
+	BuscarPorID(id uint) (*models.Cliente, error)
+	Criar(cliente *models.Cliente) (*models.Cliente, error)
+	Atualizar(cliente *models.Cliente) (*models.Cliente, error)
+	Deletar(id uint) error
+	BuscarClienteComVeiculos(id uint) (*models.ClienteVeiculosDTO, error)
 }
 
 type ClienteServiceImpl struct {
-    clienteRepo repositories.ClienteRepository
-    veiculoRepo repositories.VeiculoRepository
+	clienteRepo repositories.ClienteRepositoryGorm
+	veiculoRepo repositories.VeiculoRepository
 }
 
-func NewClienteService(clienteRepo repositories.ClienteRepository) ClienteService {
-    return &ClienteServiceImpl{
-        clienteRepo: clienteRepo,
-    }
+func NewClienteService(clienteRepo repositories.ClienteRepositoryGorm) ClienteService {
+	return &ClienteServiceImpl{
+		clienteRepo: clienteRepo,
+	}
 }
 
 func (s *ClienteServiceImpl) BuscarTodos() ([]models.Cliente, error) {
-    return s.clienteRepo.BuscarTodos()
+	return s.clienteRepo.FindAll()
 }
 
-func (s *ClienteServiceImpl) BuscarPorID(id int) (models.Cliente, error) {
-    cliente, err := s.clienteRepo.BuscarPorID(id)
-    if err != nil {
-        return models.Cliente{}, errors.New("cliente não encontrado")
-    }
-    return cliente, nil
+func (s *ClienteServiceImpl) BuscarPorID(id uint) (*models.Cliente, error) {
+	cliente, err := s.clienteRepo.FindByID(id)
+	if err != nil {
+		return nil, errors.New("cliente não encontrado")
+	}
+	return cliente, nil
 }
 
-func (s *ClienteServiceImpl) Criar(cliente models.Cliente) (models.Cliente, error) {
-    // Validar CPF
-    if !validarCPF(cliente.CPF) {
-        return models.Cliente{}, errors.New("CPF inválido")
-    }
-    
-    return s.clienteRepo.Criar(cliente)
+func (s *ClienteServiceImpl) Criar(cliente *models.Cliente) (*models.Cliente, error) {
+	err := s.clienteRepo.Create(cliente)
+	if err != nil {
+		return nil, errors.New("erro ao criar cliente")
+	}
+	return cliente, nil
 }
 
-func (s *ClienteServiceImpl) BuscarClienteComVeiculos(id int) (models.ClienteVeiculosDTO, error) {
-    cliente, err := s.clienteRepo.BuscarPorID(id)
-    if err != nil {
-        return models.ClienteVeiculosDTO{}, errors.New("cliente não encontrado")
-    }
-    
-    veiculos, err := s.veiculoRepo.BuscarPorCliente(id)
-    if err != nil {
-        return models.ClienteVeiculosDTO{}, errors.New("erro ao buscar veículos do cliente")
-    }
-    
-    return models.ClienteVeiculosDTO{
-        Cliente:  cliente,
-        Veiculos: veiculos,
-    }, nil
+func (s *ClienteServiceImpl) Atualizar(cliente *models.Cliente) (*models.Cliente, error) {
+	err := s.clienteRepo.Update(cliente)
+	if err != nil {
+		return nil, errors.New("erro ao atualizar cliente")
+	}
+	return cliente, nil
+}
+
+func (s *ClienteServiceImpl) Deletar(id uint) error {
+	err := s.clienteRepo.Delete(id)
+	if err != nil {
+		return errors.New("erro ao deletar cliente")
+	}
+	return nil
+}
+
+func (s *ClienteServiceImpl) BuscarClienteComVeiculos(id uint) (*models.ClienteVeiculosDTO, error) {
+	cliente, err := s.clienteRepo.FindWithVeiculos(id)
+	if err != nil {
+		return nil, errors.New("cliente não encontrado ou erro ao buscar veículos")
+	}
+
+	// No GORM, cliente já vem com veículos preenchidos pela relação
+	// mas mantemos o DTO para consistência com a API anterior
+	dto := &models.ClienteVeiculosDTO{
+		Cliente:  *cliente,
+		Veiculos: cliente.Veiculos,
+	}
+
+	return dto, nil
 }
 
 // Função auxiliar para validação de CPF
 func validarCPF(cpf string) bool {
-    // Implementação da validação de CPF
-    return true // Placeholder
+	// Implementação da validação de CPF
+	return true // Placeholder
 }

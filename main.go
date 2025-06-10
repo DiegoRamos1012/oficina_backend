@@ -1,12 +1,13 @@
 package main
 
 import (
-    "log"
-    "time"
-    
-    "github.com/gin-contrib/cors"
-    "github.com/gin-gonic/gin"
+	"OficinaMecanica/configs"
+	"OficinaMecanica/routes"
+	"log"
+	"time"
 
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {

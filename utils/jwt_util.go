@@ -17,8 +17,8 @@ func GerarToken(usuario models.Usuario) (string, error) {
     
     claims := jwt.MapClaims{
         "user_id":   usuario.ID,
-        "username":  usuario.Username,
-        "role":      usuario.Role,
+        "nome de usuário":  usuario.Nome,
+        "cargo":      usuario.Cargo,
         "exp":       time.Now().Add(time.Hour * 24).Unix(), // Expira em 24 horas
         "issued_at": time.Now().Unix(),
     }

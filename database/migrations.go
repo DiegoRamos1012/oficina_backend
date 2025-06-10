@@ -5,7 +5,7 @@ import (
     "time"
 
     "gorm.io/gorm"
-    "oficina/models"
+    "OficinaMecanica/models"
 )
 
 // SetupMigrations configura e executa as migrações do banco de dados
