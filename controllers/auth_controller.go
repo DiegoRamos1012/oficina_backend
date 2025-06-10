@@ -11,6 +11,13 @@ import (
 	"OficinaMecanica/utils"
 )
 
+type RegisterRequest struct {
+	Nome  string `json:"nome" binding:"required"`
+	Email string `json:"email" binding:"required,email"`
+	Senha string `json:"senha" binding:"required"`
+	Cargo string `json:"cargo" binding:"required"`
+}
+
 type AuthController struct {
 	usuarioService services.UsuarioService
 }
@@ -19,53 +26,51 @@ func NewAuthController() *AuthController {
 	return &AuthController{}
 }
 
-type LoginRequest struct {
-	Email string `json:"email" binding:"required,email"`
-	Senha string `json:"senha" binding:"required"`
+// SetUsuarioService permite injetar um serviço de usuário (útil para testes)
+func (c *AuthController) SetUsuarioService(service services.UsuarioService) {
+	c.usuarioService = service
 }
 
-type RegisterRequest struct {
-	Nome  string `json:"nome" binding:"required"`
-	Email string `json:"email" binding:"required,email"`
-	Senha string `json:"senha" binding:"required,min=6"`
-	Cargo string `json:"cargo"`
-}
-
+// Login autentica um usuário e retorna um token JWT
 func (c *AuthController) Login(ctx *gin.Context) {
-	var req LoginRequest
+	var loginRequest struct {
+		Email string `json:"email" binding:"required,email"`
+		Senha string `json:"senha" binding:"required"`
+	}
 
-	if err := ctx.ShouldBindJSON(&req); err != nil {
+	// Faz o binding do JSON da requisição
+	if err := ctx.ShouldBindJSON(&loginRequest); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
 
-	// Implementação simplificada - em um projeto real, buscar o usuário no banco
-	// e verificar a senha
-	usuario, err := c.usuarioService.BuscarPorEmail(req.Email)
+	// Busca o usuário pelo email
+	usuario, err := c.usuarioService.BuscarPorEmail(loginRequest.Email)
 	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Credenciais inválidas"})
 		return
 	}
 
-	// Verificar senha
-	if err := bcrypt.CompareHashAndPassword([]byte(usuario.Senha), []byte(req.Senha)); err != nil {
+	// Verifica se a senha está correta
+	err = bcrypt.CompareHashAndPassword([]byte(usuario.Senha), []byte(loginRequest.Senha))
+	if err != nil {
 		ctx.JSON(http.StatusUnauthorized, gin.H{"error": "Credenciais inválidas"})
 		return
 	}
 
-	// Gerar token
+	// Gera o token JWT
 	token, err := utils.GerarToken(*usuario)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao gerar token"})
 		return
 	}
 
-	// Atualizar último login
-	c.usuarioService.AtualizarUltimoLogin(usuario.ID)
+	// Atualiza o timestamp de último login
+	go c.usuarioService.AtualizarUltimoLogin(usuario.ID)
 
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": token,
-		"usuario": gin.H{
+		"user": gin.H{
 			"id":    usuario.ID,
 			"nome":  usuario.Nome,
 			"email": usuario.Email,

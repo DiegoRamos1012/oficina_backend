@@ -7,10 +7,16 @@ require (
 	github.com/gin-gonic/gin v1.10.1
 	github.com/golang-jwt/jwt/v4 v4.5.2
 	github.com/spf13/viper v1.20.1
+	github.com/stretchr/testify v1.10.0
 	gorm.io/gorm v1.30.0
 )
 
-require github.com/go-sql-driver/mysql v1.9.2 // indirect
+require (
+	github.com/davecgh/go-spew v1.1.1 // indirect
+	github.com/go-sql-driver/mysql v1.9.2 // indirect
+	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/stretchr/objx v0.5.2 // indirect
+)
 
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
