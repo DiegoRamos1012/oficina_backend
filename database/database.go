@@ -2,56 +2,29 @@ package database
 
 import (
 	"fmt"
-	"log"
 
-	"OficinaMecanica/configs"
-
+	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
-// ConnectDB estabelece conexão com o banco de dados usando GORM
+// ConnectDB estabelece uma conexão com o banco de dados usando as configurações do viper
 func ConnectDB() (*gorm.DB, error) {
-	config, err := configs.LoadConfig()
+	// Usar as configurações já carregadas pelo viper
+	host := viper.GetString("DB_HOST")
+	port := viper.GetString("DB_PORT")
+	user := viper.GetString("DB_USER")
+	password := viper.GetString("DB_PASSWORD")
+	dbname := viper.GetString("DB_NAME")
+
+	// Construir a string de conexão DSN
+	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		user, password, host, port, dbname)
+
+	// Conectar ao banco de dados
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if err != nil {
 		return nil, err
-	}
-
-	dsn := fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8mb4&parseTime=True&loc=Local",
-		config.DBUser,
-		config.DBPassword,
-		config.DBHost,
-		config.DBPort,
-		config.DBName,
-	)
-
-	// Configurando o logger para mostrar os logs de SQL
-	gormConfig := &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	}
-
-	db, err := gorm.Open(mysql.Open(dsn), gormConfig)
-	if err != nil {
-		return nil, err
-	}
-
-	// Obtém a conexão SQL subjacente para configurar o pool
-	sqlDB, err := db.DB()
-	if err != nil {
-		return nil, err
-	}
-
-	// Configurações de pool de conexões
-	sqlDB.SetMaxOpenConns(20)
-	sqlDB.SetMaxIdleConns(5)
-
-	log.Println("Conexão com banco de dados estabelecida com sucesso")
-
-	// Executa migrações, se necessário
-	if err := SetupMigrations(db); err != nil {
-		log.Printf("Aviso: Erro nas migrações: %v", err)
-		// Continuamos mesmo se houver erro nas migrações (decisão do desenvolvedor)
 	}
 
 	return db, nil

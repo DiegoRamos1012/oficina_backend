@@ -23,10 +23,15 @@ func SetupMigrations(db *gorm.DB) error {
 		// 1. Tabelas independentes primeiro
 		&models.Usuario{},
 		&models.Cliente{},
+		&models.Estoque{},
 
 		// 2. Tabelas com dependências
 		&models.Funcionario{},
 		&models.Veiculo{},
+
+		// 3. Tabelas que dependem das anteriores
+		&models.OrdemServico{},
+		&models.ItemOrdemServico{},
 	)
 
 	if err != nil {
@@ -48,21 +53,33 @@ func SetupMigrations(db *gorm.DB) error {
 
 // addOptimizationIndexes adiciona índices para otimização de consultas comuns
 func addOptimizationIndexes(db *gorm.DB) error {
-	// Estas são operações brutas de SQL para índices compostos ou específicos
-	// que podem não ser facilmente declarados nas tags do modelo
+	// Verificar se índice já existe antes de criar
+	createIndexIfNotExists := func(indexName, tableName, columns string) error {
+		var count int64
+		// Verificar se o índice já existe
+		db.Raw("SELECT COUNT(1) FROM information_schema.statistics WHERE table_schema = DATABASE() AND table_name = ? AND index_name = ?",
+			tableName, indexName).Count(&count)
 
-	// Índice para pesquisa de veículos por placa (pesquisa parcial comum)
-	if err := db.Exec("CREATE INDEX IF NOT EXISTS idx_veiculos_placa ON veiculos(placa)").Error; err != nil {
+		if count == 0 {
+			// Índice não existe, então cria
+			sql := "CREATE INDEX " + indexName + " ON " + tableName + "(" + columns + ")"
+			if err := db.Exec(sql).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	}
+
+	// Criar os índices se não existirem
+	if err := createIndexIfNotExists("idx_veiculos_placa", "veiculos", "placa"); err != nil {
 		return err
 	}
 
-	// Índice para pesquisa de clientes por nome (pesquisa parcial comum)
-	if err := db.Exec("CREATE INDEX IF NOT EXISTS idx_clientes_nome ON clientes(nome)").Error; err != nil {
+	if err := createIndexIfNotExists("idx_clientes_nome", "clientes", "nome"); err != nil {
 		return err
 	}
 
-	// Índice para autenticação (login frequente)
-	if err := db.Exec("CREATE INDEX IF NOT EXISTS idx_usuarios_email ON usuarios(email)").Error; err != nil {
+	if err := createIndexIfNotExists("idx_usuarios_email", "usuarios", "email"); err != nil {
 		return err
 	}
 

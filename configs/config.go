@@ -14,6 +14,7 @@ type Config struct {
 	JWTSecret  string `mapstructure:"JWT_SECRET"`
 }
 
+// LoadConfig carrega configurações do arquivo .env padrão
 func LoadConfig() (config Config, err error) {
 	viper.SetConfigFile(".env")
 	viper.SetConfigType("env")
@@ -32,4 +33,10 @@ func LoadConfig() (config Config, err error) {
 	}
 
 	return
+}
+
+// LoadTestConfig carrega configurações do arquivo test.env
+func LoadTestConfig() error {
+	viper.SetConfigFile("test.env")
+	return viper.ReadInConfig()
 }

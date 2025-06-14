@@ -7,8 +7,22 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/spf13/viper"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	// Configurar viper para ler o arquivo test.env
+	viper.SetConfigFile("test.env")
+	if err := viper.ReadInConfig(); err != nil {
+		// Tentar outro caminho
+		viper.SetConfigFile("../../test.env")
+		if err := viper.ReadInConfig(); err != nil {
+			// Usar configurações padrão para testes
+			viper.Set("JWT_SECRET", "teste_secret_key")
+		}
+	}
+}
 
 func TestGerarEValidarToken(t *testing.T) {
 	// Criar um usuário de teste
@@ -54,13 +68,11 @@ func TestTokenExpirado(t *testing.T) {
 	// Criar token com as claims
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 
-	// Assinar token com uma chave de teste
-	tokenString, err := token.SignedString([]byte("chave_teste"))
+	// Assinar token com a mesma chave usada no sistema
+	tokenString, err := token.SignedString([]byte(viper.GetString("JWT_SECRET")))
 	assert.NoError(t, err)
 
 	// Tentar validar o token (deve falhar por estar expirado)
-	// Nota: Isso requer uma adaptação da função ValidarToken para usar uma chave de teste
-	// ou uma função mock para esse teste específico
 	_, err = utils.ValidarToken(tokenString)
 	assert.Error(t, err)
 }
