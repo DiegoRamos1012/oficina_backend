@@ -5,13 +5,14 @@ import (
 )
 
 type Config struct {
-	DBHost     string `mapstructure:"DB_HOST"`
-	DBPort     string `mapstructure:"DB_PORT"`
-	DBUser     string `mapstructure:"DB_USER"`
-	DBPassword string `mapstructure:"DB_PASSWORD"`
-	DBName     string `mapstructure:"DB_NAME"`
-	ServerPort string `mapstructure:"SERVER_PORT"`
-	JWTSecret  string `mapstructure:"JWT_SECRET"`
+	DBHost      string `mapstructure:"DB_HOST"`
+	DBPort      string `mapstructure:"DB_PORT"`
+	DBUser      string `mapstructure:"DB_USER"`
+	DBPassword  string `mapstructure:"DB_PASSWORD"`
+	DBName      string `mapstructure:"DB_NAME"`
+	ServerPort  string `mapstructure:"SERVER_PORT"`
+	JWTSecret   string `mapstructure:"JWT_SECRET"`
+	Environment string `mapstructure:"ENVIRONMENT"`
 }
 
 // LoadConfig carrega configurações do arquivo .env padrão
