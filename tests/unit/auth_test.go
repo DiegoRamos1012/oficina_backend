@@ -75,13 +75,9 @@ func TestLogin(t *testing.T) {
 	mockRepo := new(MockUsuarioRepository)
 
 	// Criar o serviço com o mock do repositório
-	usuarioService := services.NewUsuarioService(mockRepo)
 
 	// Criar o controlador de autenticação sem argumentos
 	authController := controllers.NewAuthController()
-
-	// Injetar o serviço mockado usando o método setter
-	authController.SetUsuarioService(usuarioService)
 
 	// Criar um roteador Gin para o teste
 	router := gin.Default()

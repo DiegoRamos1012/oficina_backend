@@ -32,7 +32,7 @@ func SetupRoutes(r *gin.Engine) {
 	ordemServicoService := services.NewOrdemServicoService(ordemServicoRepo, veiculoRepo, clienteRepo, funcionarioRepo, estoqueRepo)
 
 	// Controllers
-	authController := controllers.NewAuthController(usuarioService)
+	authController := controllers.NewAuthController()
 	usuarioController := controllers.NewUsuarioController(usuarioService)
 	clienteController := controllers.NewClienteController(clienteService)
 	veiculoController := controllers.NewVeiculoController(veiculoService)
@@ -46,6 +46,9 @@ func SetupRoutes(r *gin.Engine) {
 		// Rotas de autenticação
 		public.POST("/login", authController.Login)
 		public.POST("/register", authController.Register)
+		public.GET("/validate-token", middlewares.AuthMiddleware(), func(c *gin.Context) {
+			c.JSON(200, gin.H{"valid": true})
+		})
 	}
 
 	// Rotas protegidas por autenticação

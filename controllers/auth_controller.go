@@ -22,8 +22,8 @@ type AuthController struct {
 	usuarioService services.UsuarioService
 }
 
-func NewAuthController(usuarioService services.UsuarioService) *AuthController {
-	return &AuthController{usuarioService: usuarioService}
+func NewAuthController() *AuthController {
+	return &AuthController{}
 }
 
 // SetUsuarioService permite injetar um serviço de usuário (útil para testes)
@@ -68,9 +68,6 @@ func (c *AuthController) Login(ctx *gin.Context) {
 	// Atualiza o timestamp de último login
 	go c.usuarioService.AtualizarUltimoLogin(usuario.ID)
 
-	// Remover senha do objeto retornado
-	usuario.Senha = ""
-
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": token,
 		"user": gin.H{
@@ -86,6 +83,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	var req RegisterRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		// Adicione este log:
 		fmt.Printf("Erro ao fazer bind do JSON no Register: %+v\n", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
@@ -119,12 +117,9 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
-	// Remover senha do objeto retornado
-	usuarioCriado.Senha = ""
-
 	ctx.JSON(http.StatusCreated, gin.H{
 		"token": token,
-		"user": gin.H{
+		"usuario": gin.H{
 			"id":    usuarioCriado.ID,
 			"nome":  usuarioCriado.Nome,
 			"email": usuarioCriado.Email,
