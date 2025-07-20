@@ -32,7 +32,7 @@ func SetupRoutes(r *gin.Engine) {
 	ordemServicoService := services.NewOrdemServicoService(ordemServicoRepo, veiculoRepo, clienteRepo, funcionarioRepo, estoqueRepo)
 
 	// Controllers
-	authController := controllers.NewAuthController()
+	authController := controllers.NewAuthController(usuarioService)
 	usuarioController := controllers.NewUsuarioController(usuarioService)
 	clienteController := controllers.NewClienteController(clienteService)
 	veiculoController := controllers.NewVeiculoController(veiculoService)

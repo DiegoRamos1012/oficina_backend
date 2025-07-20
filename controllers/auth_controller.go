@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -15,15 +16,14 @@ type RegisterRequest struct {
 	Nome  string `json:"nome" binding:"required"`
 	Email string `json:"email" binding:"required,email"`
 	Senha string `json:"senha" binding:"required"`
-	Cargo string `json:"cargo" binding:"required"`
 }
 
 type AuthController struct {
 	usuarioService services.UsuarioService
 }
 
-func NewAuthController() *AuthController {
-	return &AuthController{}
+func NewAuthController(usuarioService services.UsuarioService) *AuthController {
+	return &AuthController{usuarioService: usuarioService}
 }
 
 // SetUsuarioService permite injetar um serviço de usuário (útil para testes)
@@ -68,6 +68,9 @@ func (c *AuthController) Login(ctx *gin.Context) {
 	// Atualiza o timestamp de último login
 	go c.usuarioService.AtualizarUltimoLogin(usuario.ID)
 
+	// Remover senha do objeto retornado
+	usuario.Senha = ""
+
 	ctx.JSON(http.StatusOK, gin.H{
 		"token": token,
 		"user": gin.H{
@@ -83,6 +86,7 @@ func (c *AuthController) Register(ctx *gin.Context) {
 	var req RegisterRequest
 
 	if err := ctx.ShouldBindJSON(&req); err != nil {
+		fmt.Printf("Erro ao fazer bind do JSON no Register: %+v\n", err)
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
@@ -99,7 +103,6 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		Nome:  req.Nome,
 		Email: req.Email,
 		Senha: req.Senha, // O hash será gerado pelo hook BeforeCreate
-		Cargo: req.Cargo,
 	}
 
 	// Salvar usuário
@@ -116,9 +119,12 @@ func (c *AuthController) Register(ctx *gin.Context) {
 		return
 	}
 
+	// Remover senha do objeto retornado
+	usuarioCriado.Senha = ""
+
 	ctx.JSON(http.StatusCreated, gin.H{
 		"token": token,
-		"usuario": gin.H{
+		"user": gin.H{
 			"id":    usuarioCriado.ID,
 			"nome":  usuarioCriado.Nome,
 			"email": usuarioCriado.Email,
