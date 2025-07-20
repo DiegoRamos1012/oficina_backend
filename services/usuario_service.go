@@ -21,6 +21,7 @@ type UsuarioService interface {
 	ValidarCredenciais(email, senha string) (*models.Usuario, error) // Verifica se as credenciais são válidas
 	AlterarSenha(id uint, senhaAtual, novaSenha string) error        // Altera a senha do usuário
 	AlterarStatus(id uint, ativo bool) error                         // Ativa ou desativa um usuário
+	AtualizarAvatar(id uint, avatarPath string) error                // Atualiza o avatar do usuário
 }
 
 // UsuarioServiceImpl implementa a interface UsuarioService
@@ -238,4 +239,15 @@ func (s *UsuarioServiceImpl) AlterarStatus(id uint, ativo bool) error {
 	}
 
 	return nil
+}
+
+// AtualizarAvatar atualiza o avatar de um usuário
+// Recebe o ID do usuário e o caminho para a nova imagem do avatar
+func (s *UsuarioServiceImpl) AtualizarAvatar(id uint, avatarPath string) error {
+	usuario, err := s.usuarioRepo.FindByID(id)
+	if err != nil {
+		return err
+	}
+	usuario.Avatar = avatarPath
+	return s.usuarioRepo.Update(usuario)
 }

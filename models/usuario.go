@@ -13,11 +13,12 @@ type Usuario struct {
 	Email       string         `json:"email" gorm:"not null;unique;size:100" binding:"required,email"`
 	Senha       string         `json:"senha,omitempty" gorm:"not null;size:100" binding:"required"`
 	Cargo       string         `json:"cargo" gorm:"size:20;default:'user'"`
-	Ativo       bool           `json:"ativo" gorm:"default:true"` // Novo campo
+	Ativo       bool           `json:"ativo" gorm:"default:true"`
 	UltimoLogin *time.Time     `json:"ultimoLogin,omitempty"`
 	CreatedAt   time.Time      `json:"criadoEm" gorm:"autoCreateTime"`
 	UpdatedAt   time.Time      `json:"atualizadoEm" gorm:"autoUpdateTime"`
 	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
+	Avatar      string         `json:"avatar"`
 
 	// Relação inversa (opcional)
 	Funcionario *Funcionario `json:"funcionario,omitempty" gorm:"foreignKey:UsuarioID"`

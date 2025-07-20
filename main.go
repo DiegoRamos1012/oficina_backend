@@ -36,7 +36,7 @@ func main() {
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,
-		AllowAllOrigins: true,
+		AllowAllOrigins:  true,
 	}))
 
 	if config.Environment != "production" {
@@ -66,6 +66,9 @@ func main() {
 	// Configurar rotas
 	routes.SetupRoutes(r)
 
+	// Servir arquivos estáticos para uploads de avatar
+	r.Static("/uploads", "./uploads")
+
 	// Iniciar o servidor
 	log.Printf("Servidor iniciado na porta %s", config.ServerPort)
 	r.Run(":" + config.ServerPort)
@@ -82,7 +85,7 @@ func setupLogs(env string) {
 		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 		log.Println("======================================================")
 		log.Println("🔧 INICIANDO SISTEMA OFICINA MECÂNICA - MODO DESENVOLVIMENTO")
-        log.Println("- Projeto feito por Diego Ramos dos Santos. Github: Diego1012 -")
+		log.Println("- Projeto feito por Diego Ramos dos Santos. Github: Diego1012 -")
 		log.Println("======================================================")
 		log.Println("📌 RESUMO DO PROJETO:")
 		log.Println(" • Backend em Go com Gin Framework")

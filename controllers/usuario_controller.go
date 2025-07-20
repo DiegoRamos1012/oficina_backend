@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -207,4 +209,35 @@ func (c *UsuarioController) Deletar(ctx *gin.Context) {
 	}
 
 	ctx.Status(http.StatusNoContent)
+}
+
+func (c *UsuarioController) UploadAvatar(ctx *gin.Context) {
+	id, err := strconv.Atoi(ctx.Param("id"))
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "ID inválido"})
+		return
+	}
+
+	file, err := ctx.FormFile("avatar")
+	if err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Arquivo não enviado"})
+		return
+	}
+
+	// Garante que a pasta exista
+	os.MkdirAll("uploads/avatars", os.ModePerm)
+
+	filename := fmt.Sprintf("uploads/avatars/%d_%s", id, file.Filename)
+	if err := ctx.SaveUploadedFile(file, filename); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar arquivo"})
+		return
+	}
+
+	err = c.usuarioService.AtualizarAvatar(uint(id), filename)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar avatar"})
+		return
+	}
+
+	ctx.JSON(http.StatusOK, gin.H{"avatar": filename})
 }

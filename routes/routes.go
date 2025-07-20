@@ -63,6 +63,7 @@ func SetupRoutes(r *gin.Engine) {
 			usuarios.POST("/", usuarioController.Criar)
 			usuarios.PUT("/:id", usuarioController.Atualizar)
 			usuarios.DELETE("/:id", usuarioController.Deletar)
+			usuarios.POST("/:id/avatar", usuarioController.UploadAvatar) // Rota para upload de avatar
 		}
 
 		// Rotas de clientes
