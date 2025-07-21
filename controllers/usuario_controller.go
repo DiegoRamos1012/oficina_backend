@@ -111,20 +111,35 @@ func (c *UsuarioController) Atualizar(ctx *gin.Context) {
 		return
 	}
 
-	var usuario models.Usuario
-	if err := ctx.ShouldBindJSON(&usuario); err != nil {
+	type UpdateUsuarioDTO struct {
+		Nome  string `json:"nome"`
+		Email string `json:"email"`
+	}
+	var input UpdateUsuarioDTO
+	if err := ctx.ShouldBindJSON(&input); err != nil {
 		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos"})
 		return
 	}
 
-	usuario.ID = uint(id)
-	usuarioAtualizado, err := c.usuarioService.Atualizar(&usuario)
+	usuario, err := c.usuarioService.BuscarPorID(uint(id))
+	if err != nil {
+		ctx.JSON(http.StatusNotFound, gin.H{"error": "Usuário não encontrado"})
+		return
+	}
+
+	if input.Nome != "" {
+		usuario.Nome = input.Nome
+	}
+	if input.Email != "" {
+		usuario.Email = input.Email
+	}
+
+	usuarioAtualizado, err := c.usuarioService.Atualizar(usuario)
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao atualizar usuário"})
 		return
 	}
 
-	// Remover senha do resultado
 	ctx.JSON(http.StatusOK, gin.H{
 		"id":               usuarioAtualizado.ID,
 		"nome":             usuarioAtualizado.Nome,
@@ -226,6 +241,14 @@ func (c *UsuarioController) UploadAvatar(ctx *gin.Context) {
 
 	// Garante que a pasta exista
 	os.MkdirAll("uploads/avatars", os.ModePerm)
+
+	// Busca o usuário para deletar o avatar antigo
+	usuario, err := c.usuarioService.BuscarPorID(uint(id))
+	if err == nil && usuario.Avatar != "" {
+		if _, statErr := os.Stat(usuario.Avatar); statErr == nil {
+			_ = os.Remove(usuario.Avatar)
+		}
+	}
 
 	filename := fmt.Sprintf("uploads/avatars/%d_%s", id, file.Filename)
 	if err := ctx.SaveUploadedFile(file, filename); err != nil {

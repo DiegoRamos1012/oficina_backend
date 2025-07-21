@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,9 +23,12 @@ type AuthController struct {
 	usuarioService services.UsuarioService
 }
 
-func NewAuthController() *AuthController {
-	return &AuthController{}
+func NewAuthController(service services.UsuarioService) *AuthController {
+	return &AuthController{
+		usuarioService: service,
+	}
 }
+
 
 // SetUsuarioService permite injetar um serviço de usuário (útil para testes)
 func (c *AuthController) SetUsuarioService(service services.UsuarioService) {
@@ -126,4 +130,5 @@ func (c *AuthController) Register(ctx *gin.Context) {
 			"cargo": usuarioCriado.Cargo,
 		},
 	})
+	log.Printf("usuarioService: %+v", c.usuarioService)
 }
