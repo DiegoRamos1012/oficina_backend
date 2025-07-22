@@ -12,64 +12,54 @@ import (
 )
 
 func main() {
-	// Carregar configurações primeiro para definir o ambiente
+	// 1. Carregar configurações e definir ambiente
 	config, err := configs.LoadConfig()
 	if err != nil {
 		log.Fatalf("Erro ao carregar configurações: %v", err)
 	}
 
-	// Configurar logs baseados no ambiente
+	// 2. Configurar logs baseados no ambiente
 	setupLogs(config.Environment)
 
-	// Inicializar o router
-	r := gin.Default()
-
-	// Se em produção, usar o modo Release do Gin para reduzir logs
+	// 3. Definir modo do Gin antes de criar o router
 	if config.Environment == "production" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	// Configurar CORS
-	r.Use(cors.New(cors.Config{
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-		AllowAllOrigins:  true,
-	}))
-
-	if config.Environment != "production" {
-		log.Printf("Ambiente: %s, Servidor na porta: %s", config.Environment, config.ServerPort)
-	}
-
-	// Conectar ao banco de dados
+	// 4. Inicializar o banco de dados
 	db, err := database.ConnectDB()
 	if err != nil {
 		log.Fatalf("Erro ao conectar ao banco de dados: %v", err)
 	}
 
-	// Em produção, log simples de progresso
-	if config.Environment == "production" {
-		log.Println("Conectado ao banco de dados, configurando sistema...")
-	} else {
-		// Log detalhado para desenvolvimento
-		log.Printf("Conexão estabelecida com o banco de dados %s em %s:%s",
-			config.DBName, config.DBHost, config.DBPort)
-	}
-
-	// Executar migrations apenas se as tabelas não existirem
+	// 5. Executar migrations
 	if err := database.SetupMigrations(db); err != nil {
 		log.Fatalf("Erro ao executar migrações: %v", err)
 	}
 
-	// Configurar rotas
+	// 6. Inicializar o router
+	r := gin.Default()
+
+	// 7. Configurar middlewares globais (CORS, etc.)
+	r.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:5173"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
+		ExposeHeaders:    []string{"Content-Length"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+
+	// 8. Log ambiente e porta
+	log.Printf("Ambiente: %s, Servidor na porta: %s", config.Environment, config.ServerPort)
+
+	// 9. Configurar rotas
 	routes.SetupRoutes(r)
 
-	// Servir arquivos estáticos para uploads de avatar
+	// 10. Servir arquivos estáticos para uploads de avatar
 	r.Static("/uploads", "./uploads")
 
-	// Iniciar o servidor
+	// 11. Iniciar o servidor
 	log.Printf("Servidor iniciado na porta %s", config.ServerPort)
 	r.Run(":" + config.ServerPort)
 }
@@ -77,11 +67,9 @@ func main() {
 // setupLogs configura o comportamento dos logs dependendo do ambiente
 func setupLogs(env string) {
 	if env == "production" {
-		// Em produção: logs minimalistas com timestamp e apenas informações essenciais
 		log.SetFlags(log.Ldate | log.Ltime)
 		log.Println("Iniciando servidor em ambiente de produção")
 	} else {
-		// Em desenvolvimento: logs detalhados com arquivo e número da linha
 		log.SetFlags(log.Ldate | log.Ltime | log.Lshortfile)
 		log.Println("======================================================")
 		log.Println("🔧 INICIANDO SISTEMA OFICINA MECÂNICA - MODO DESENVOLVIMENTO")
