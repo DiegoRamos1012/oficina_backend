@@ -1,7 +1,9 @@
 package controllers
 
 import (
+	"encoding/json"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -244,4 +246,67 @@ func (c *EstoqueController) AtualizarQuantidade(ctx *gin.Context) {
 	}
 
 	ctx.JSON(http.StatusOK, itemAtualizado)
+}
+
+// Estrutura para controle de limites de estoque
+// Salva em arquivo local: controle_estoque_config.json
+
+type ControleEstoqueConfig struct {
+	LimiteBaixo int `json:"limite_baixo"`
+	LimiteMedio int `json:"limite_medio"`
+}
+
+const controleEstoqueConfigFile = "controle_estoque_config.json"
+
+// GET /estoque/controle-estoque
+func (c *EstoqueController) BuscarControleEstoque(ctx *gin.Context) {
+	config, err := lerControleEstoqueConfig()
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao ler controle de estoque: " + err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, config)
+}
+
+// POST /estoque/controle-estoque
+func (c *EstoqueController) SalvarControleEstoque(ctx *gin.Context) {
+	var config ControleEstoqueConfig
+	if err := ctx.ShouldBindJSON(&config); err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Dados inválidos: " + err.Error()})
+		return
+	}
+	if err := gravarControleEstoqueConfig(config); err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Erro ao salvar controle de estoque: " + err.Error()})
+		return
+	}
+	ctx.JSON(http.StatusOK, config)
+}
+
+// Funções utilitárias para ler/gravar controle de estoque
+func lerControleEstoqueConfig() (ControleEstoqueConfig, error) {
+	var config ControleEstoqueConfig
+	file, err := os.Open(controleEstoqueConfigFile)
+	if err != nil {
+		if os.IsNotExist(err) {
+			// Retorna valores padrão se não existir
+			return ControleEstoqueConfig{LimiteBaixo: 10, LimiteMedio: 20}, nil
+		}
+		return config, err
+	}
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	if err := decoder.Decode(&config); err != nil {
+		return config, err
+	}
+	return config, nil
+}
+
+func gravarControleEstoqueConfig(config ControleEstoqueConfig) error {
+	file, err := os.Create(controleEstoqueConfigFile)
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	encoder := json.NewEncoder(file)
+	return encoder.Encode(config)
 }

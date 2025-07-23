@@ -98,6 +98,8 @@ func SetupRoutes(r *gin.Engine) {
 			estoque.DELETE("/:id", estoqueController.Deletar)
 			estoque.GET("/categoria/:categoria", estoqueController.BuscarPorCategoria)
 			estoque.GET("/baixo-estoque", estoqueController.BuscarBaixoEstoque)
+			estoque.GET("/controle-estoque", estoqueController.BuscarControleEstoque)
+			estoque.POST("/controle-estoque", estoqueController.SalvarControleEstoque)
 		}
 
 		// Rotas de funcionários
