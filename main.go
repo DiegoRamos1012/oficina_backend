@@ -40,10 +40,10 @@ func main() {
 	// 6. Inicializar o router
 	r := gin.Default()
 
-	// 7. Configurar middlewares globais (CORS, etc.)
+	// 7. Configurar middleware global de CORS
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		ExposeHeaders:    []string{"Content-Length"},
 		AllowCredentials: true,

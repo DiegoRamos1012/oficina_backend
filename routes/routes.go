@@ -53,6 +53,7 @@ func SetupRoutes(r *gin.Engine) {
 
 	// Rotas protegidas por autenticação
 	authorized := r.Group("/api")
+	// Removido o middleware CORS daqui, pois já está global no main.go
 	authorized.Use(middlewares.AuthMiddleware())
 	{
 		// Rotas de usuários
@@ -90,9 +91,9 @@ func SetupRoutes(r *gin.Engine) {
 		// Rotas de estoque
 		estoque := authorized.Group("/estoque")
 		{
-			estoque.GET("/", estoqueController.BuscarTodos)
+			estoque.GET("", estoqueController.BuscarTodos)
 			estoque.GET("/:id", estoqueController.BuscarPorID)
-			estoque.POST("/", estoqueController.Criar)
+			estoque.POST("", estoqueController.Criar)
 			estoque.PUT("/:id", estoqueController.Atualizar)
 			estoque.DELETE("/:id", estoqueController.Deletar)
 			estoque.GET("/categoria/:categoria", estoqueController.BuscarPorCategoria)
