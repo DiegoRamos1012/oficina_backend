@@ -20,7 +20,6 @@ func SetupRoutes(r *gin.Engine) {
 	clienteRepo := repositories.NewClienteRepositoryGorm(db)
 	veiculoRepo := repositories.NewVeiculoRepository(db)
 	estoqueRepo := repositories.NewEstoqueRepository(db)
-	funcionarioRepo := repositories.NewFuncionarioRepository(db)
 	ordemServicoRepo := repositories.NewOrdemServicoRepository(db)
 
 	// Serviços
@@ -28,8 +27,7 @@ func SetupRoutes(r *gin.Engine) {
 	clienteService := services.NewClienteService(clienteRepo)
 	veiculoService := services.NewVeiculoService(veiculoRepo)
 	estoqueService := services.NewEstoqueService(estoqueRepo)
-	funcionarioService := services.NewFuncionarioService(funcionarioRepo)
-	ordemServicoService := services.NewOrdemServicoService(ordemServicoRepo, veiculoRepo, clienteRepo, funcionarioRepo, estoqueRepo)
+	ordemServicoService := services.NewOrdemServicoService(ordemServicoRepo, veiculoRepo, clienteRepo, estoqueRepo)
 
 	// Controllers
 	authController := controllers.NewAuthController(usuarioService)
@@ -37,7 +35,6 @@ func SetupRoutes(r *gin.Engine) {
 	clienteController := controllers.NewClienteController(clienteService)
 	veiculoController := controllers.NewVeiculoController(veiculoService)
 	estoqueController := controllers.NewEstoqueController(estoqueService)
-	funcionarioController := controllers.NewFuncionarioController(funcionarioService)
 	ordemServicoController := controllers.NewOrdemServicoController(ordemServicoService)
 
 	// Rotas públicas
@@ -99,18 +96,6 @@ func SetupRoutes(r *gin.Engine) {
 			estoque.GET("/baixo-estoque", estoqueController.BuscarBaixoEstoque)
 			estoque.GET("/controle-estoque", estoqueController.BuscarControleEstoque)
 			estoque.POST("/controle-estoque", estoqueController.SalvarControleEstoque)
-		}
-
-		// Rotas de funcionários
-		funcionarios := authorized.Group("/funcionarios")
-		{
-			funcionarios.GET("", funcionarioController.BuscarTodos)
-			funcionarios.GET("/:id", funcionarioController.BuscarPorID)
-			funcionarios.POST("", funcionarioController.Criar)
-			funcionarios.PUT("/:id", funcionarioController.Atualizar)
-			funcionarios.DELETE("/:id", funcionarioController.Deletar)
-			funcionarios.GET("/cpf/:cpf", funcionarioController.BuscarPorCPF)
-			funcionarios.GET("/cargo/:cargo", funcionarioController.BuscarPorCargo)
 		}
 
 		// Rotas de ordens de serviço

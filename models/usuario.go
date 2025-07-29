@@ -8,17 +8,20 @@ import (
 )
 
 type Usuario struct {
-	ID          uint           `json:"id" gorm:"primaryKey;autoIncrement;not null"`
-	Nome        string         `json:"nome" gorm:"not null;size:100" binding:"required"`
-	Email       string         `json:"email" gorm:"not null;unique;size:100" binding:"required,email"`
-	Senha       string         `json:"senha,omitempty" gorm:"not null;size:100" binding:"required"`
-	Cargo       string         `json:"cargo" gorm:"size:20;default:'user'"`
-	Ativo       bool           `json:"ativo" gorm:"default:true"`
-	UltimoLogin *time.Time     `json:"ultimoLogin,omitempty"`
-	CreatedAt   time.Time      `json:"criadoEm" gorm:"autoCreateTime"`
-	UpdatedAt   time.Time      `json:"atualizadoEm" gorm:"autoUpdateTime"`
-	DeletedAt   gorm.DeletedAt `json:"-" gorm:"index"`
-	Avatar      string         `json:"avatar"`
+	ID           uint           `json:"id" gorm:"primaryKey;autoIncrement;not null"`
+	Nome         string         `json:"nome" gorm:"not null;size:100" binding:"required"`
+	Email        string         `json:"email" gorm:"not null;unique;size:100" binding:"required,email"`
+	Senha        string         `json:"senha,omitempty" gorm:"not null;size:100" binding:"required"`
+	Cargo        string         `json:"cargo" gorm:"size:20;default:'user'"`
+	Ativo        bool           `json:"ativo" gorm:"default:true"`
+	UltimoLogin  *time.Time     `json:"ultimoLogin,omitempty"`
+	CreatedAt    time.Time      `json:"criadoEm" gorm:"autoCreateTime"`
+	UpdatedAt    time.Time      `json:"atualizadoEm" gorm:"autoUpdateTime"`
+	DeletedAt    gorm.DeletedAt `json:"-" gorm:"index"`
+	Avatar       string         `json:"avatar"`
+	DataAdmissao *time.Time     `json:"dataAdmissao" gorm:"column:data_admissao"`
+	Status       string         `json:"status" gorm:"column:status"`
+	Ferias       bool           `json:"ferias" gorm:"column:ferias"`
 
 	// Relação inversa (opcional)
 	Funcionario *Funcionario `json:"funcionario,omitempty" gorm:"foreignKey:UsuarioID"`

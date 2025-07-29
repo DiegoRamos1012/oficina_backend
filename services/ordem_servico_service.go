@@ -33,7 +33,6 @@ type OrdemServicoServiceImpl struct {
 	osRepo          repositories.OrdemServicoRepository
 	veiculoRepo     repositories.VeiculoRepository
 	clienteRepo     repositories.ClienteRepositoryGorm
-	funcionarioRepo repositories.FuncionarioRepository
 	estoqueRepo     repositories.EstoqueRepository
 }
 
@@ -41,14 +40,12 @@ func NewOrdemServicoService(
 	osRepo repositories.OrdemServicoRepository,
 	veiculoRepo repositories.VeiculoRepository,
 	clienteRepo repositories.ClienteRepositoryGorm,
-	funcionarioRepo repositories.FuncionarioRepository,
 	estoqueRepo repositories.EstoqueRepository,
 ) OrdemServicoService {
 	return &OrdemServicoServiceImpl{
 		osRepo:          osRepo,
 		veiculoRepo:     veiculoRepo,
 		clienteRepo:     clienteRepo,
-		funcionarioRepo: funcionarioRepo,
 		estoqueRepo:     estoqueRepo,
 	}
 }
@@ -87,15 +84,6 @@ func (s *OrdemServicoServiceImpl) Criar(os *models.OrdemServico) (*models.OrdemS
 	_, err = s.clienteRepo.FindByID(os.ClienteID)
 	if err != nil {
 		return nil, errors.New("cliente não encontrado")
-	}
-
-	// Verificar se o funcionário existe, se fornecido
-	if os.FuncionarioID > 0 {
-		funcionario, err := s.funcionarioRepo.FindByID(os.FuncionarioID)
-		if err != nil {
-			return nil, errors.New("funcionário não encontrado")
-		}
-		os.Funcionario = *funcionario
 	}
 
 	// Garantir que o veículo pertence ao cliente

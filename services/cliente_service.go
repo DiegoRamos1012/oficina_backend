@@ -18,7 +18,6 @@ type ClienteService interface {
 
 type ClienteServiceImpl struct {
 	clienteRepo repositories.ClienteRepositoryGorm
-	veiculoRepo repositories.VeiculoRepository
 }
 
 func NewClienteService(clienteRepo repositories.ClienteRepositoryGorm) ClienteService {
@@ -79,8 +78,3 @@ func (s *ClienteServiceImpl) BuscarClienteComVeiculos(id uint) (*models.ClienteV
 	return dto, nil
 }
 
-// Função auxiliar para validação de CPF
-func validarCPF(cpf string) bool {
-	// Implementação da validação de CPF
-	return true // Placeholder
-}
