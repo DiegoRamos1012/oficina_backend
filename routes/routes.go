@@ -53,7 +53,6 @@ func SetupRoutes(r *gin.Engine) {
 
 	// Rotas protegidas por autenticação
 	authorized := r.Group("/api")
-	// Removido o middleware CORS daqui, pois já está global no main.go
 	authorized.Use(middlewares.AuthMiddleware())
 	{
 		// Rotas de usuários
@@ -105,9 +104,9 @@ func SetupRoutes(r *gin.Engine) {
 		// Rotas de funcionários
 		funcionarios := authorized.Group("/funcionarios")
 		{
-			funcionarios.GET("/", funcionarioController.BuscarTodos)
+			funcionarios.GET("", funcionarioController.BuscarTodos)
 			funcionarios.GET("/:id", funcionarioController.BuscarPorID)
-			funcionarios.POST("/", funcionarioController.Criar)
+			funcionarios.POST("", funcionarioController.Criar)
 			funcionarios.PUT("/:id", funcionarioController.Atualizar)
 			funcionarios.DELETE("/:id", funcionarioController.Deletar)
 			funcionarios.GET("/cpf/:cpf", funcionarioController.BuscarPorCPF)
