@@ -12,7 +12,7 @@ type Usuario struct {
 	Nome         string         `json:"nome" gorm:"not null;size:100" binding:"required"`
 	Email        string         `json:"email" gorm:"not null;unique;size:100" binding:"required,email"`
 	Senha        string         `json:"senha,omitempty" gorm:"not null;size:100" binding:"required"`
-	Cargo        string         `json:"cargo" gorm:"size:20;default:'user'"`
+	Cargo        string         `json:"cargo" gorm:"size:20;default:'usuário'"`
 	Ativo        bool           `json:"ativo" gorm:"default:true"`
 	UltimoLogin  *time.Time     `json:"ultimoLogin,omitempty"`
 	CreatedAt    time.Time      `json:"criadoEm" gorm:"autoCreateTime"`
