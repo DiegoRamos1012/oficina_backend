@@ -1,0 +1,26 @@
+# Binaries
+/main
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (remove the comment below if you use Go modules)
+vendor/
+
+# IDE/editor folders
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Docker volumes (caso mapeie para pasta local)
+mysql_data/
+
+# Env files
+.env
